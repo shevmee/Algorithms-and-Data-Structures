@@ -5,8 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include_directories(include)
-
 include(FetchContent)
 
 FetchContent_Declare(
@@ -33,11 +31,13 @@ else()
 endif()
 
 add_executable(BigInteger main.cpp src/BigInteger.cpp)
+target_include_directories(BigInteger PRIVATE include)
 
-add_executable(BigIntegerTests test_main.cpp src/BigInteger.cpp)
+add_executable(BigIntegerTests test/test_main.cpp src/BigInteger.cpp)
+target_include_directories(BigIntegerTests PRIVATE include)
 
 target_link_libraries(BigIntegerTests gtest gtest_main)
 
+
 enable_testing()
 add_test(NAME BigIntegerTests COMMAND BigIntegerTests)
-

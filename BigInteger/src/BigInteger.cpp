@@ -1,11 +1,10 @@
-#include <stdexcept>
-#include <iostream>
-#include <iomanip>
-
 #include "BigInteger.hpp"
 
-BigInteger::BigInteger(long long number) 
-{
+#include <iomanip>
+#include <iostream>
+#include <stdexcept>
+
+BigInteger::BigInteger(long long number) {
   if (number == 0) {
     digits_.push_back(0);
     is_negative_ = false;
@@ -24,8 +23,7 @@ BigInteger::BigInteger(long long number)
   }
 }
 
-BigInteger::BigInteger(const std::string& number) 
-{
+BigInteger::BigInteger(const std::string& number) {
   if (number.empty()) {
     throw std::invalid_argument("Empty string is not a valid number");
   }
@@ -42,7 +40,7 @@ BigInteger::BigInteger(const std::string& number)
 
   for (size_t i = number.size(); i-- > start;) {
     if (!std::isdigit(number[i])) {
-        throw std::invalid_argument("String contains non-digit characters");
+      throw std::invalid_argument("String contains non-digit characters");
     }
 
     chunk += (number[i] - '0') * base_pow;
@@ -64,80 +62,117 @@ BigInteger::BigInteger(const std::string& number)
   }
 }
 
-BigInteger::BigInteger(const char* number) 
-    : BigInteger(std::string(number)) {}
+BigInteger::BigInteger(const char* number) : BigInteger(std::string(number)) {}
 
-BigInteger::BigInteger(const BigInteger& other) 
+BigInteger::BigInteger(const BigInteger& other)
     : digits_(other.digits_), is_negative_(other.is_negative_) {}
 
-BigInteger& BigInteger::operator=(const BigInteger& other) & 
-{
-  if (this != &other) 
-  {
+BigInteger& BigInteger::operator=(const BigInteger& other) & {
+  if (this != &other) {
     digits_ = other.digits_;
     is_negative_ = other.is_negative_;
   }
   return *this;
 }
 
-std::strong_ordering BigInteger::operator<=>(const BigInteger& other) const
-{
-  if (is_negative_ != other.is_negative_)
-  {
-    return is_negative_ ? std::strong_ordering::less : std::strong_ordering::greater;
+std::strong_ordering BigInteger::operator<=>(const BigInteger& other) const {
+  if (is_negative_ != other.is_negative_) {
+    return is_negative_ ? std::strong_ordering::less
+                        : std::strong_ordering::greater;
   }
 
-  if (length() != other.length())
-  {
+  if (length() != other.length()) {
     if (is_negative_) {
-      return digits_.size() > other.digits_.size() ? std::strong_ordering::less : std::strong_ordering::greater;
+      return digits_.size() > other.digits_.size()
+                 ? std::strong_ordering::less
+                 : std::strong_ordering::greater;
     } else {
-      return digits_.size() < other.digits_.size() ? std::strong_ordering::less : std::strong_ordering::greater;
+      return digits_.size() < other.digits_.size()
+                 ? std::strong_ordering::less
+                 : std::strong_ordering::greater;
     }
   }
 
-  for (size_t i = length(); i-- > 0;)
-  {
-    if (digits_[i] != other.digits_[i])
-    {
+  for (size_t i = length(); i-- > 0;) {
+    if (digits_[i] != other.digits_[i]) {
       if (is_negative_) {
-        return digits_[i] > other.digits_[i] ? std::strong_ordering::less : std::strong_ordering::greater;
+        return digits_[i] > other.digits_[i] ? std::strong_ordering::less
+                                             : std::strong_ordering::greater;
       } else {
-        return digits_[i] < other.digits_[i] ? std::strong_ordering::less : std::strong_ordering::greater;
+        return digits_[i] < other.digits_[i] ? std::strong_ordering::less
+                                             : std::strong_ordering::greater;
       }
     }
   }
   return std::strong_ordering::equal;
 }
 
-bool BigInteger::operator==(const BigInteger &other) const
-{
+bool BigInteger::operator==(const BigInteger& other) const {
   return (*this <=> other) == std::strong_ordering::equal;
 }
 
-bool BigInteger::operator!=(const BigInteger& other) const
-{
+bool BigInteger::operator!=(const BigInteger& other) const {
   return !(*this == other);
 }
 
-std::ostream& operator<<(std::ostream& os, const BigInteger& bi) {
-  if (bi.is_negative_ && !(bi.digits_.size() == 1 && bi.digits_[0] == 0)) {
-    os << '-';
+BigInteger sqrt(const BigInteger& n)
+{
+  if (n < BigInteger(0LL)) {
+    throw std::invalid_argument("Square root of negative number is not supported.");
   }
 
-  if (bi.digits_.empty()) {
-    os << '0';
+  if (n == BigInteger(0LL) || n == BigInteger(1LL)) {
+    return n;
+  }
+
+  BigInteger left = 1LL;
+  BigInteger right = n;
+  BigInteger result = 0LL;
+
+  while (left <= right)
+  {
+    BigInteger mid = (left + right) / 2;
+    BigInteger midSquared = mid * mid;
+
+    if (midSquared == n)
+    {
+      return mid;
+    }
+
+    if (midSquared < n)
+    {
+      left = mid + 1;
+      result = mid;
+    } else {
+      right = mid - 1;
+    }
+  }
+
+  return result;
+}
+
+std::ostream &operator<<(std::ostream &os, const BigInteger &bi)
+{
+    if (bi.is_negative_ && !(bi.digits_.size() == 1 && bi.digits_[0] == 0))
+    {
+        os << '-';
+    }
+
+    if (bi.digits_.empty())
+    {
+        os << '0';
+        return os;
+    }
+
+    os << bi.digits_.back();
+
+    for (size_t i = bi.digits_.size() - 1; i-- > 0;)
+    {
+        // os << std::setw(BigInteger::BASE) << std::setfill('0') << bi.digits_[i];
+        os << bi.digits_[i];
+    }
+
     return os;
-  }
-
-  os << bi.digits_.back();
-
-  for (size_t i = bi.digits_.size() - 1; i-- > 0;) {
-    //os << std::setw(BigInteger::BASE) << std::setfill('0') << bi.digits_[i];
-    os << bi.digits_[i];
-  }
-
-  return os;
 }
 
 std::istream& operator>>(std::istream& is, BigInteger& bi) {
@@ -166,31 +201,26 @@ std::istream& operator>>(std::istream& is, BigInteger& bi) {
     bi.digits_.push_back(input[i] - '0');
   }
 
-    bi.normalize();
-  
+  bi.normalize();
+
   return is;
 }
 
-BigInteger factorial(int n)
-{
-  if (n < 0)
-  {
+BigInteger factorial(int n) {
+  if (n < 0) {
     throw std::invalid_argument("n must be non-negative");
   }
 
   BigInteger result = 1;
-  for (size_t i = 2; i <= n; ++i)
-  {
+  for (size_t i = 2; i <= n; ++i) {
     result *= i;
   }
 
   return result;
 }
 
-BigInteger NthCatalan(int n)
-{
-  if (n < 0)
-  {
+BigInteger NthCatalan(int n) {
+  if (n < 0) {
     throw std::invalid_argument("n must be non-negative");
   }
 
@@ -199,15 +229,27 @@ BigInteger NthCatalan(int n)
   return num / denom;
 }
 
-int BigInteger::length() const
+BigInteger NthFibonacci(std::size_t n)
 {
-  return digits_.size();
+  if (n == 0) BigInteger(0ll);
+  if (n == 1) BigInteger(1ll);
+
+  BigInteger a = 0ll;
+  BigInteger b = 1ll;
+
+  for (size_t i = 2; i <= n; ++i)
+  {
+    BigInteger temp = a;
+    b += a;
+    a = temp;
+  }
+
+  return b;
 }
 
-bool BigInteger::is_negative() const
-{
-  return is_negative_;
-}
+int BigInteger::length() const { return digits_.size(); }
+
+bool BigInteger::is_negative() const { return is_negative_; }
 
 int BigInteger::operator[](std::size_t index) const {
   if (index >= digits_.size()) {
@@ -216,21 +258,10 @@ int BigInteger::operator[](std::size_t index) const {
   return digits_[index];
 }
 
-// int& BigInteger::operator[](std::size_t index) {
-//   if (index >= digits_.size()) {
-//     throw std::out_of_range("Index out of bounds");
-//   }
-//   return digits_[index];
-// }
-
-BigInteger &BigInteger::operator+=(const BigInteger &other)
-{
-  if (is_negative_ == other.is_negative_)
-    {
-      // Same sign, so we simply add the magnitudes
-      add_magnitude(other);
-    } else {
-    // Different signs, we need to subtract magnitudes
+BigInteger& BigInteger::operator+=(const BigInteger& other) {
+  if (is_negative_ == other.is_negative_) {
+    add_magnitude(other);
+  } else {
     if (compare_magnitude(other) >= 0) {
       subtract_magnitude(other);
     } else {
@@ -245,10 +276,8 @@ BigInteger &BigInteger::operator+=(const BigInteger &other)
 
 BigInteger& BigInteger::operator-=(const BigInteger& other) {
   if (is_negative_ != other.is_negative_) {
-    // Different signs, so we add magnitudes
     add_magnitude(other);
   } else {
-    // Same sign, we need to subtract magnitudes
     if (compare_magnitude(other) >= 0) {
       subtract_magnitude(other);
     } else {
@@ -270,8 +299,10 @@ BigInteger& BigInteger::operator*=(const BigInteger& other) {
     long long carry = 0;
     for (size_t j = 0; j < other.length() || carry; ++j) {
       long long current = result.digits_[i + j] +
-        static_cast<long long>(operator[](i)) * (j < other.length() ? other[j] : 0) + carry;
-      
+                          static_cast<long long>(operator[](i)) *
+                              (j < other.length() ? other[j] : 0) +
+                          carry;
+
       result.digits_[i + j] = current % BASE;
       carry = current / BASE;
     }
@@ -283,43 +314,74 @@ BigInteger& BigInteger::operator*=(const BigInteger& other) {
   return *this;
 }
 
-BigInteger &BigInteger::operator/=(const BigInteger& other)
-{
-  if (other == BigInteger(0LL))
-  {
+BigInteger& BigInteger::operator/=(const BigInteger& other) {
+  if (other == BigInteger(0LL)) {
     throw std::invalid_argument("Division by zero");
   }
 
+  BigInteger abs_current = this->abs();
+  BigInteger abs_other = other.abs();
+
   BigInteger result;
+  result.digits_.resize(abs_current.length() - abs_other.length() + 1, 0);
+
   BigInteger current;
 
-  result.digits_.resize(length(), 0);
-
-  for (size_t i = length(); i-- > 0;)
-  {
-    current = current * BASE + digits_[i];
+  for (size_t i = abs_current.length() - 1; i != static_cast<size_t>(-1); --i) {
+    current = current * BASE + abs_current.digits_[i];
     int x = 0;
     int left = 0;
-    int right = BASE;
+    int right = BASE - 1;
 
-    while (left <= right)
-    {
+    while (left <= right) {
       int mid = (right + left) / 2;
-      BigInteger temp = other * BigInteger(mid);
-      if (temp <= current)
-      {
+      BigInteger temp = abs_other * BigInteger(mid);
+      if (temp <= current) {
         x = mid;
         left = mid + 1;
       } else {
         right = mid - 1;
       }
     }
+
     result.digits_[i] = x;
-    current = current - other * BigInteger(x);
+    current = current - abs_other * BigInteger(x);
   }
 
   result.is_negative_ = is_negative() != other.is_negative();
+
   result.normalize();
+
+  *this = result;
+  return *this;
+}
+
+BigInteger& BigInteger::operator%=(const BigInteger& other) {
+  BigInteger quotient = *this / other;
+  *this -= quotient * other;
+  return *this;
+}
+
+BigInteger &BigInteger::operator^=(const BigInteger& other)
+{
+  if (other.is_negative_) {
+    throw std::invalid_argument("Negative exponent not supported");
+  }
+
+  BigInteger base = *this;
+  BigInteger result = 1LL;
+  BigInteger exponent = other;
+
+  while (exponent != BigInteger(0LL))
+  {
+    if (exponent % 2 == 1)
+    {
+      result *= base;
+    }
+    base *= base;
+    exponent /= BigInteger(2LL);
+  }
+
   *this = result;
   return *this;
 }
@@ -374,55 +436,67 @@ void BigInteger::normalize() {
   }
 }
 
-BigInteger operator+(const BigInteger& lhs, const BigInteger& rhs)
-{
+BigInteger BigInteger::abs() const {
+  BigInteger res = *this;
+  res.is_negative_ = false;
+  return res;
+}
+
+BigInteger operator+(const BigInteger& lhs, const BigInteger& rhs) {
   BigInteger result = lhs;
   result += rhs;
   return result;
 }
 
-BigInteger operator-(const BigInteger& lhs, const BigInteger& rhs)
-{
+BigInteger operator-(const BigInteger& lhs, const BigInteger& rhs) {
   BigInteger result = lhs;
   result -= rhs;
   return result;
 }
 
-BigInteger operator*(const BigInteger& lhs, const BigInteger& rhs)
-{
+BigInteger operator*(const BigInteger& lhs, const BigInteger& rhs) {
   BigInteger copy = lhs;
   copy *= rhs;
   return copy;
 }
 
-BigInteger operator/(const BigInteger& lhs, const BigInteger& rhs)
-{
+BigInteger operator/(const BigInteger& lhs, const BigInteger& rhs) {
   BigInteger copy = lhs;
   copy /= rhs;
   return copy;
 }
 
-BigInteger& BigInteger::operator++()
+BigInteger operator%(const BigInteger& lhs, const BigInteger& rhs)
 {
+  BigInteger copy = lhs;
+  copy %= rhs;
+  return copy;
+}
+
+BigInteger operator^(const BigInteger& lhs, const BigInteger& rhs)
+{
+  BigInteger copy = lhs;
+  copy ^= rhs;
+  return copy;
+}
+
+BigInteger& BigInteger::operator++() {
   *this += BigInteger(1);
   return *this;
 }
 
-BigInteger BigInteger::operator++(int) 
-{
+BigInteger BigInteger::operator++(int) {
   BigInteger copy = *this;
   ++(*this);
   return copy;
 }
 
-BigInteger& BigInteger::operator--()
-{
+BigInteger& BigInteger::operator--() {
   *this -= BigInteger(1);
   return *this;
 }
 
-BigInteger BigInteger::operator--(int)
-{
+BigInteger BigInteger::operator--(int) {
   BigInteger copy = *this;
   --(*this);
   return copy;
