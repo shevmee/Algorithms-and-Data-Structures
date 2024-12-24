@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "Rational.h"
+#include "Rational.hpp"
 
 int main() {
     try {

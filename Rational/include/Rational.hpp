@@ -28,18 +28,7 @@ public:
     Rational multiply(const Rational& other) const;
     Rational divide(const Rational& other) const;
 
-    auto operator<=>(const Rational& other) const {
-        long long lhs = static_cast<long long>(m_numerator) * other.m_denomenator;
-        long long rhs = static_cast<long long>(m_denomenator) * other.m_numerator;
-
-        if (lhs < rhs) {
-            return std::strong_ordering::less;
-        } else if (lhs > rhs) {
-            return std::strong_ordering::greater;
-        } else {
-            return std::strong_ordering::equal;
-        }
-    }
+    auto operator<=>(const Rational& other) const;
 };
 
 #endif
