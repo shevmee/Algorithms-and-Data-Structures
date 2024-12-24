@@ -23,12 +23,21 @@ public:
     void displayFraction() const;
     void displayDecimalFraction() const;
 
-    Rational add(const Rational& other) const;
-    Rational subtract(const Rational& other) const;
-    Rational multiply(const Rational& other) const;
-    Rational divide(const Rational& other) const;
+    explicit operator double() const;
 
-    auto operator<=>(const Rational& other) const;
+    Rational& operator+= (const Rational&);
+    Rational& operator-= (const Rational&);
+    Rational& operator/= (const Rational&);
+    Rational& operator*= (const Rational&);
+
+    std::strong_ordering operator<=>(const Rational&) const;
+    bool operator== (const Rational&) const;
+    bool operator!= (const Rational&) const;
+
+    friend Rational operator+ (const Rational&, const Rational&);
+    friend Rational operator- (const Rational&, const Rational&);
+    friend Rational operator/ (const Rational&, const Rational&);
+    friend Rational operator* (const Rational&, const Rational&);
 };
 
 #endif

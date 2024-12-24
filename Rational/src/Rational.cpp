@@ -61,53 +61,63 @@ void Rational::setDenomerator(int denomenator)
     normalize();
 }
 
-Rational Rational::add(const Rational& other) const
+Rational& Rational::operator+= (const Rational& other)
 {
-    int num = m_numerator * other.getDenomerator() + m_denomenator * other.getNumerator();
-    int denom = m_denomenator * other.getDenomerator();
-
-    return Rational(num, denom);
+    m_numerator = m_numerator * other.getDenomerator() + m_denomenator * other.getNumerator();
+    m_denomenator *= other.getDenomerator();
+    normalize();
+    return *this;
 }
 
-Rational Rational::subtract(const Rational& other) const
+Rational& Rational::operator-= (const Rational& other)
 {
-    int num = m_numerator * other.getDenomerator() - m_denomenator * other.getNumerator();
-    int denom = m_denomenator * other.getDenomerator();
-
-    return Rational(num, denom);
+    m_numerator = m_numerator * other.getDenomerator() - m_denomenator * other.getNumerator();
+    m_denomenator *= other.getDenomerator();
+    normalize();
+    return *this;
 }
 
-Rational Rational::multiply(const Rational& other) const
-{
-    int num = m_numerator * other.getNumerator();
-    int denom = m_denomenator * other.getDenomerator();
-
-    return Rational(num, denom);
-}
-
-Rational Rational::divide(const Rational& other) const 
+Rational& Rational::operator/= (const Rational& other)
 {
     if (other.m_numerator == 0) {
         throw std::invalid_argument("Cannot divide by zero");
     }
-    int num = m_numerator * other.getDenomerator();
-    int denom = m_denomenator * other.getNumerator();
-
-    return Rational(num, denom);
+    m_numerator *= other.getDenomerator();
+    m_denomenator *= other.getNumerator();
+    normalize();
+    return *this;
 }
 
-auto Rational::operator<=>(const Rational& other) const {
-        long long lhs = static_cast<long long>(m_numerator) * other.m_denomenator;
-        long long rhs = static_cast<long long>(m_denomenator) * other.m_numerator;
+Rational& Rational::operator*= (const Rational& other)
+{
+    m_numerator *= other.getNumerator();
+    m_denomenator *= other.getDenomerator();
+    normalize();
+    return *this;
+}
 
-        if (lhs < rhs) {
-            return std::strong_ordering::less;
-        } else if (lhs > rhs) {
-            return std::strong_ordering::greater;
-        } else {
-            return std::strong_ordering::equal;
-        }
+std::strong_ordering Rational::operator<=>(const Rational& other) const {
+    long long lhs = static_cast<long long>(m_numerator) * other.m_denomenator;
+    long long rhs = static_cast<long long>(m_denomenator) * other.m_numerator;
+
+    if (lhs < rhs) {
+        return std::strong_ordering::less;
+    } else if (lhs > rhs) {
+        return std::strong_ordering::greater;
+    } else {
+        return std::strong_ordering::equal;
     }
+}
+
+bool Rational::operator== (const Rational& other) const
+{
+ return (*this <=> other) == std::strong_ordering::equal;
+}
+
+bool Rational::operator!= (const Rational& other) const
+{
+    return !(*this == other);
+}
 
 void Rational::displayFraction() const 
 {
@@ -118,4 +128,36 @@ void Rational::displayDecimalFraction() const
 {
     double decimalValue = static_cast<double>(m_numerator) / static_cast<double>(m_denomenator);
     std::cout << std::fixed << std::setprecision(10) << decimalValue << std::endl;
+}
+
+Rational::operator double() const {
+    return static_cast<double>(m_numerator) / static_cast<double>(m_denomenator);
+}
+
+Rational operator+ (const Rational& lhs, const Rational& rhs)
+{
+    Rational copy = lhs;
+    copy += rhs;
+    return copy;
+}
+
+Rational operator- (const Rational& lhs, const Rational& rhs)
+{
+    Rational copy = lhs;
+    copy -= rhs;
+    return copy;
+}
+
+Rational operator/ (const Rational& lhs, const Rational& rhs)
+{
+    Rational copy = lhs;
+    copy /= rhs;
+    return copy;
+}
+
+Rational operator* (const Rational& lhs, const Rational& rhs)
+{
+    Rational copy = lhs;
+    copy *= rhs;
+    return copy;
 }
